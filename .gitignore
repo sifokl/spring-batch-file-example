@@ -55,3 +55,7 @@ output.txt
 mvnw
 mvnw.cmd
 .mvn/
+
+
+#.zip
+*.zip
