@@ -47,7 +47,9 @@ class FooBarQuixControllerTest {
 
         mockMvc.perform(get("/api/transform/3"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("FOOFOO"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value(Constants.MSG_TRANSFORMATION_SUCCESS))
+                .andExpect(jsonPath("$.data").value("FOOFOO"));
     }
 
     @Test
@@ -57,7 +59,9 @@ class FooBarQuixControllerTest {
 
         mockMvc.perform(get("/api/transform/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("1"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value(Constants.MSG_TRANSFORMATION_SUCCESS))
+                .andExpect(jsonPath("$.data").value(1));
     }
 
     @Test
@@ -68,7 +72,9 @@ class FooBarQuixControllerTest {
 
         mockMvc.perform(get("/api/transform/105"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Le nombre 105 n'est pas valide. Il doit être entre 0 et 100."));
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Le nombre 105 n'est pas valide. Il doit être entre 0 et 100."))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test
@@ -80,7 +86,9 @@ class FooBarQuixControllerTest {
 
         mockMvc.perform(get("/api/transform/-1"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Le nombre -1 n'est pas valide. Il doit être entre 0 et 100."));
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Le nombre -1 n'est pas valide. Il doit être entre 0 et 100."))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test
@@ -103,7 +111,9 @@ class FooBarQuixControllerTest {
 
         mockMvc.perform(post("/api/batch/run"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(Constants.MSG_BATCH_LAUNCHED));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value(Constants.MSG_BATCH_LAUNCHED))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test
@@ -115,8 +125,8 @@ class FooBarQuixControllerTest {
 
         mockMvc.perform(post("/api/batch/run"))
                 .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.message").value("Une erreur interne est survenue."))
-                .andExpect(jsonPath("$.status").value(500))
-                .andExpect(jsonPath("$.error").value("Internal Server Error"));
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Erreur interne : Test failure"))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 }

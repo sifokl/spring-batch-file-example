@@ -1,6 +1,7 @@
 package com.batch.foobarquix.controller;
 
 
+import com.batch.foobarquix.dto.ApiResponse;
 import com.batch.foobarquix.service.FooBarQuixTransformerService;
 import com.batch.foobarquix.util.Constants;
 import org.slf4j.Logger;
@@ -33,16 +34,17 @@ public class FooBarQuixController {
     }
 
     @GetMapping(Constants.ENDPOINT_PATH_TRANSFORM + "/{number}")
-    public ResponseEntity<String> transformSingleNumber(@PathVariable int number) {
+    public ResponseEntity<ApiResponse<String>>transformSingleNumber(@PathVariable int number) {
         log.info("Requête reçue pour transformer le nombre : {}", number);
 
         String result = fooBarQuixTransformerService.transform(number);
         log.info("Résultat de la transformation de {} : {}", number, result);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(new ApiResponse<>(true, Constants.MSG_TRANSFORMATION_SUCCESS, result));
+
     }
 
     @PostMapping(Constants.ENDPOINT_PATH_RUN)
-    public ResponseEntity<String> runBatchJob() throws JobExecutionException {
+    public ResponseEntity<ApiResponse<String>> runBatchJob() throws JobExecutionException {
 
         long timestamp = System.currentTimeMillis();
         log.info("Requête POST reçue pour lancer le batch. Timestamp : {}", timestamp);
@@ -54,7 +56,7 @@ public class FooBarQuixController {
         log.debug("Préparation du lancement du job avec les paramètres : {}", params);
         jobLauncher.run(kataJob, params);
         log.info("Le batch a été lancé avec succès.");
-        return ResponseEntity.ok(Constants.MSG_BATCH_LAUNCHED);
+        return ResponseEntity.ok(new ApiResponse<>(true,Constants.MSG_BATCH_LAUNCHED, null));
 
     }
 

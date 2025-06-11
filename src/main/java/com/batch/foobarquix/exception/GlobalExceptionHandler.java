@@ -1,5 +1,6 @@
 package com.batch.foobarquix.exception;
 
+import com.batch.foobarquix.dto.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecutionException;
@@ -18,15 +19,17 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(JobExecutionException.class)
-    public ResponseEntity<ErrorResponse> handleJobExecution(JobExecutionException ex) {
+    public ResponseEntity<ApiResponse<String>> handleJobExecution(JobExecutionException ex) {
         log.error("Batch execution failed: {}", ex.getMessage(), ex);
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Échec de l'exécution du batch.");
+        return ResponseEntity.internalServerError().body(new ApiResponse<>(false, ex.getMessage(), "Échec de l'exécution du batch."));
+
     }
 
 
     @ExceptionHandler(InvalidNumberRangeException.class)
-    public ResponseEntity<String> handleInvalidNumberRangeException(InvalidNumberRangeException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
+    public ResponseEntity<ApiResponse<String>> handleInvalidNumberRangeException(InvalidNumberRangeException ex) {
+        return ResponseEntity.badRequest().body(new ApiResponse<>(false, ex.getMessage(), null));
+
     }
 
     @ExceptionHandler(MissingBatchInputFileException.class)
@@ -36,10 +39,10 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        ErrorResponse response = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
+    public ResponseEntity<ApiResponse<String>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        ApiResponse response = new ApiResponse<>(
+                false,
+                HttpStatus.BAD_REQUEST.value()+" : "+
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 "Format de paramètre invalide : " + ex.getValue()
         );
@@ -48,23 +51,8 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
-        log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Une erreur interne est survenue.");
+    public ResponseEntity<ApiResponse<String>> handleAllOtherErrors(Exception ex) {
+        return ResponseEntity.internalServerError().body(new ApiResponse<>(false, "Erreur interne : " + ex.getMessage(), null));
     }
 
-
-
-    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message) {
-        return ResponseEntity.status(status).body(
-                new ErrorResponse(LocalDateTime.now(), status.value(), status.getReasonPhrase(), message)
-        );
-    }
-
-    public record ErrorResponse(
-            LocalDateTime timestamp,
-            int status,
-            String error,
-            String message
-    ) {}
 }

@@ -8,6 +8,7 @@ public final class Constants {
         public static final String BAD_INPUT_MESSAGE = "Le nombre doit être entre 0 et 100.";
 
         public static final String MSG_BATCH_LAUNCHED = "Batch lancé!";
+        public static final String MSG_TRANSFORMATION_SUCCESS = "Transformation réussie !";
         public static final String MSG_BATCH_FAILURE_PREFIX = "Échec du lancement du batch : ";
 
         public static final String PROCESS_DATA_SEPARATOR = " ";
