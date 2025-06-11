@@ -1,12 +1,18 @@
 package com.batch.foobarquix.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FooBarQuixTransformerService {
 
+    private static final Logger log = LoggerFactory.getLogger(FooBarQuixTransformerService.class);
 
     public String transform(int number) {
+
+        log.debug("Début de la transformation pour le nombre : {}", number);
+
         StringBuilder result = new StringBuilder();
 
         // divisible par N
@@ -21,7 +27,10 @@ public class FooBarQuixTransformerService {
         }
 
         // default behavior
-        return result.length() > 0 ? result.toString() : String.valueOf(number);
+        result = new StringBuilder(result.length() > 0 ? result.toString() : String.valueOf(number));
+        log.debug("Résultat final de la transformation pour {} : {}", number, result.isEmpty() ? "(vide)" : result);
+
+        return result.toString();
     }
 
 
