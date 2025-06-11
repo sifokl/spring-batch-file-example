@@ -1,6 +1,7 @@
 package com.batch.foobarquix.batch;
 
 
+import com.batch.foobarquix.util.Constants;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -19,7 +20,7 @@ public class BatchConfig {
 
     @Bean
     public Job kataJob(JobRepository jobRepository, Step kataStep) {
-        return new JobBuilder("kataJob", jobRepository)
+        return new JobBuilder(Constants.NAME_JOB, jobRepository)
                 .start(kataStep)
                 .build();
     }
@@ -31,7 +32,7 @@ public class BatchConfig {
                          ItemProcessor<Integer, String> processor,
                          ItemWriter<String> writer) {
 
-        return new StepBuilder("kataStep", jobRepository)
+        return new StepBuilder(Constants.NAME_STEP, jobRepository)
                 .<Integer, String>chunk(10, transactionManager)
                 .reader(reader)
                 .processor(processor)

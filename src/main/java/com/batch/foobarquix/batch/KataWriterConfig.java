@@ -1,6 +1,7 @@
 package com.batch.foobarquix.batch;
 
 import com.batch.foobarquix.config.BatchProperties;
+import com.batch.foobarquix.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.file.FlatFileItemWriter;
@@ -27,7 +28,7 @@ public class KataWriterConfig {
         log.info("Initialisation du FlatFileItemWriter avec le fichier : {}", properties.getOutputFile());
 
         FlatFileItemWriter<String> writer = new FlatFileItemWriter<>();
-        writer.setName("kataWriter");
+        writer.setName(Constants.NAME_WRITER);
         writer.setResource(new FileSystemResource(properties.getOutputFile()));
         writer.setLineAggregator(new PassThroughLineAggregator<>());
 

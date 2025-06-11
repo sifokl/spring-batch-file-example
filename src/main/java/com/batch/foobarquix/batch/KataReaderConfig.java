@@ -2,6 +2,7 @@ package com.batch.foobarquix.batch;
 
 
 import com.batch.foobarquix.config.BatchProperties;
+import com.batch.foobarquix.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.file.FlatFileItemReader;
@@ -25,7 +26,7 @@ import org.springframework.core.io.FileSystemResource;
 
             log.info("Initialisation du FlatFileItemReader avec le fichier : {}", properties.getInputFile());
             FlatFileItemReader<Integer> reader = new FlatFileItemReader<>();
-            reader.setName("kataReader");
+            reader.setName(Constants.NAME_READER);
             reader.setResource(new FileSystemResource(properties.getInputFile()));
             reader.setLinesToSkip(0);
             reader.setLineMapper((line, lineNumber) -> Integer.parseInt(line.trim()));

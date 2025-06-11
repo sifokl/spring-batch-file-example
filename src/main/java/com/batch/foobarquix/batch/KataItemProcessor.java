@@ -2,6 +2,7 @@ package com.batch.foobarquix.batch;
 
 
 import com.batch.foobarquix.service.FooBarQuixTransformerService;
+import com.batch.foobarquix.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
@@ -22,7 +23,7 @@ public class KataItemProcessor implements ItemProcessor<Integer, String> {
     public String process(Integer item) {
         log.debug("Début du traitement de l'élément : {}", item);
         String transformed = transformer.transform(item);
-        String output = item + " " + transformed;
+        String output = item + Constants.PROCESS_DATA_SEPARATOR + transformed;
         log.debug("Résultat après transformation : {}", output);
         return output;
     }
