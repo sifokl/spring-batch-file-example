@@ -1,6 +1,9 @@
 package com.batch.foobarquix.controller;
 
+import com.batch.foobarquix.exception.GlobalExceptionHandler;
+import com.batch.foobarquix.exception.InvalidNumberRangeException;
 import com.batch.foobarquix.service.FooBarQuixTransformerService;
+import com.batch.foobarquix.util.Constants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.Job;
@@ -10,6 +13,7 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -19,7 +23,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+
 @WebMvcTest(FooBarQuixController.class)
+@Import(GlobalExceptionHandler.class)
 class FooBarQuixControllerTest {
 
     @Autowired
@@ -57,17 +63,24 @@ class FooBarQuixControllerTest {
     @Test
     @DisplayName("GET /api/transform/105 should return 400 for input above max")
     void testUpperBoundViolation() throws Exception {
+        when(transformerService.transform(105))
+                .thenThrow(new InvalidNumberRangeException(105));
+
         mockMvc.perform(get("/api/transform/105"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Le nombre doit être entre 0 et 100."));
+                .andExpect(content().string("Le nombre 105 n'est pas valide. Il doit être entre 0 et 100."));
     }
 
     @Test
     @DisplayName("GET /api/transform/-1 should return 400 for input below 0")
     void testLowerBoundViolation() throws Exception {
+
+        when(transformerService.transform(-1))
+                .thenThrow(new InvalidNumberRangeException(-1));
+
         mockMvc.perform(get("/api/transform/-1"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Le nombre doit être entre 0 et 100."));
+                .andExpect(content().string("Le nombre -1 n'est pas valide. Il doit être entre 0 et 100."));
     }
 
     @Test
@@ -90,7 +103,7 @@ class FooBarQuixControllerTest {
 
         mockMvc.perform(post("/api/batch/run"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Batch lancé avec succès !"));
+                .andExpect(content().string(Constants.MSG_BATCH_LAUNCHED));
     }
 
     @Test
@@ -99,8 +112,11 @@ class FooBarQuixControllerTest {
         when(jobLauncher.run(eq(kataJob), any(JobParameters.class)))
                 .thenThrow(new RuntimeException("Test failure"));
 
+
         mockMvc.perform(post("/api/batch/run"))
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Échec du lancement du batch")));
+                .andExpect(jsonPath("$.message").value("Une erreur interne est survenue."))
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.error").value("Internal Server Error"));
     }
 }

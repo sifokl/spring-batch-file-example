@@ -1,5 +1,6 @@
 package com.batch.foobarquix.service;
 
+import com.batch.foobarquix.exception.InvalidNumberRangeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -7,11 +8,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class FooBarQuixTransformerService {
 
-    private static final Logger log = LoggerFactory.getLogger(FooBarQuixTransformerService.class);
+    private final Logger log = LoggerFactory.getLogger(FooBarQuixTransformerService.class);
 
     public String transform(int number) {
 
         log.debug("Début de la transformation pour le nombre : {}", number);
+
+        if (number < 0 || number > 100) {
+            throw new InvalidNumberRangeException(number); // Exception personnalisée
+        }
 
         StringBuilder result = new StringBuilder();
 

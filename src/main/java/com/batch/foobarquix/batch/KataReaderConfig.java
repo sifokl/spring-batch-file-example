@@ -2,6 +2,7 @@ package com.batch.foobarquix.batch;
 
 
 import com.batch.foobarquix.config.BatchProperties;
+import com.batch.foobarquix.exception.MissingBatchInputFileException;
 import com.batch.foobarquix.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +24,17 @@ import org.springframework.core.io.FileSystemResource;
 
         @Bean
         public FlatFileItemReader<Integer> reader() {
-
-            log.info("Initialisation du FlatFileItemReader avec le fichier : {}", properties.getInputFile());
+            String inputFile = properties.getInputFile();
+            log.info("Initialisation du FlatFileItemReader avec le fichier : {}", inputFile);
             FlatFileItemReader<Integer> reader = new FlatFileItemReader<>();
             reader.setName(Constants.NAME_READER);
+
+            FileSystemResource resource = new FileSystemResource(inputFile);
+
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new MissingBatchInputFileException(inputFile);
+            }
+
             reader.setResource(new FileSystemResource(properties.getInputFile()));
             reader.setLinesToSkip(0);
             reader.setLineMapper((line, lineNumber) -> Integer.parseInt(line.trim()));
