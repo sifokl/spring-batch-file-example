@@ -3,13 +3,20 @@ package com.batch.foobarquix.controller;
 import com.batch.foobarquix.service.FooBarQuixTransformerService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(FooBarQuixController.class)
@@ -17,6 +24,12 @@ class FooBarQuixControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private JobLauncher jobLauncher;
+
+    @MockBean
+    private Job kataJob;
 
     @MockBean
     private FooBarQuixTransformerService transformerService;
@@ -62,5 +75,32 @@ class FooBarQuixControllerTest {
     void testInvalidInput() throws Exception {
         mockMvc.perform(get("/api/transform/abc"))
                 .andExpect(status().isBadRequest());
+    }
+
+
+    /**
+     * Tests pour l'endpoint # 2
+     */
+
+    @Test
+    @DisplayName("POST /api/batch/run should return 200 on success")
+    void testRunBatchJobSuccess() throws Exception {
+        JobExecution mockExecution = new JobExecution(1L);
+        when(jobLauncher.run(eq(kataJob), any(JobParameters.class))).thenReturn(mockExecution);
+
+        mockMvc.perform(post("/api/batch/run"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Batch lancé avec succès !"));
+    }
+
+    @Test
+    @DisplayName("POST /api/batch/run should return 500 on failure")
+    void testRunBatchJobFailure() throws Exception {
+        when(jobLauncher.run(eq(kataJob), any(JobParameters.class)))
+                .thenThrow(new RuntimeException("Test failure"));
+
+        mockMvc.perform(post("/api/batch/run"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Échec du lancement du batch")));
     }
 }
