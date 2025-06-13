@@ -1,10 +1,15 @@
 package com.batch.foobarquix.service;
 
+import com.batch.foobarquix.exception.InvalidNumberRangeException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FooBarQuixTransformerServiceTest {
 
@@ -26,5 +31,17 @@ class FooBarQuixTransformerServiceTest {
     })
     void testTransformations(int input, String expected) {
         assertEquals(expected, underTest.transform(input));
+    }
+
+
+    @ParameterizedTest(name = "transform({0}) should throw InvalidNumberRangeException")
+    @DisplayName("Should throw exception for out-of-bound inputs")
+    @MethodSource("provideInvalidTestCases")
+    void testInvalidInputs(int input) {
+        assertThrows(InvalidNumberRangeException.class, () -> underTest.transform(input));
+    }
+
+    private static Stream<Integer> provideInvalidTestCases() {
+        return Stream.of(-1, -100, 101, 999);
     }
 }
